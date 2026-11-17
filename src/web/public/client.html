@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>现场采样端（离线演示）</title>
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<header>
+  <h1>🧪 现场采样端</h1>
+  <span id="device-badge" class="badge blue"></span>
+  <span id="conn-badge" class="badge gray">检测中…</span>
+  <span id="server-badge" class="badge gray"></span>
+  <span class="spacer"></span>
+  <button class="small" id="btn-refresh">刷新任务</button>
+</header>
+
+<main>
+  <div class="card">
+    <h2>网络与同步模拟 <span class="muted" style="font-weight:400">离线期间所有操作只写入本机发件箱（localStorage）</span></h2>
+    <div class="row">
+      <label class="switch"><input type="checkbox" id="sw-offline" /> ✈️ 离线模式（阻止所有请求）</label>
+      <label class="switch"><input type="checkbox" id="sw-drop" /> 📭 丢弃上传成功回执（请求已发出但本端视为失败，验证幂等重传）</label>
+      <label class="switch"><input type="checkbox" id="sw-autosync" checked /> 🔄 恢复在线后自动同步发件箱</label>
+      <button class="small primary" id="btn-sync">立即同步发件箱</button>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <h2>① 选择任务与采样点，填写虚构采样记录</h2>
+      <label>任务</label>
+      <select id="sel-task"></select>
+      <label>采样点</label>
+      <select id="sel-point"></select>
+      <div id="point-info" class="muted" style="margin:6px 0;font-size:12.5px"></div>
+      <label>虚构测定值（键值对，自动生成示例）</label>
+      <div id="measure-inputs"></div>
+      <label>备注（虚构）</label>
+      <input id="inp-note" placeholder="例如：现场多云、水面无异常" />
+      <div class="row" style="margin-top:10px">
+        <button class="primary" id="btn-save">💾 保存记录到发件箱</button>
+        <button id="btn-fill">生成一组虚构示例值</button>
+      </div>
+      <p class="muted" style="font-size:12px;margin:8px 0 0">
+        保存即生成全局稳定记录 ID；离线重复保存不会产生重复事实。本系统仅使用虚构环境样本，不采集任何个人真实信息。
+      </p>
+    </div>
+
+    <div class="card">
+      <h2>② 本机发件箱 <span id="outbox-count" class="badge gray">0</span></h2>
+      <table>
+        <thead><tr><th>记录 ID</th><th>点位</th><th>采样时间</th><th>状态</th><th>操作</th></tr></thead>
+        <tbody id="outbox-body"></tbody>
+      </table>
+      <div class="row" style="margin-top:8px">
+        <button class="small" id="btn-clear-sent">清除已确认条目</button>
+        <button class="small danger" id="btn-clear-all">清空发件箱</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>③ 任务、归属与领取状态 <span class="muted" style="font-weight:400">整任务锁定 / 细粒度领取两种策略</span></h2>
+    <div id="tasks-view"></div>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <h2>④ 本端已提交事实记录的服务器处理状态</h2>
+      <p class="muted" style="font-size:12px">真实采样不会被丢弃：accepted=已采纳，conflict=在人工审阅队列，rejected=裁决未采纳（仍可追溯）。</p>
+      <table>
+        <thead><tr><th>记录 ID</th><th>点位</th><th>状态</th><th>有效/基准</th><th>冲突号</th></tr></thead>
+        <tbody id="records-body"></tbody>
+      </table>
+    </div>
+    <div class="card">
+      <h2>⑤ 运行日志</h2>
+      <div class="log" id="log"></div>
+    </div>
+  </div>
+</main>
+
+<script type="module" src="client.js"></script>
+</body>
+</html>

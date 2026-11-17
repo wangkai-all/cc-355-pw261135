@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>采样管控管理台（虚构演示）</title>
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<header>
+  <h1>🛰️ 采样管控管理台</h1>
+  <span class="badge gray">全部数据均为虚构，无个人真实信息</span>
+  <span class="spacer"></span>
+  <div class="tabs">
+    <button data-tab="overview" class="active">总览/补传</button>
+    <button data-tab="tasks">设备与任务管控</button>
+    <button data-tab="conflicts">冲突裁决 <span id="conflict-dot" class="badge red" style="display:none">0</span></button>
+    <button data-tab="records">事实记录/统计</button>
+    <button data-tab="audit">决定追溯</button>
+  </div>
+</header>
+
+<main>
+  <!-- 总览 -->
+  <section class="section active" id="sec-overview">
+    <div class="grid2">
+      <div class="card">
+        <h2>设备连接</h2>
+        <table><thead><tr><th>设备</th><th>状态</th><th>最近心跳</th><th>操作</th></tr></thead>
+        <tbody id="ov-clients"></tbody></table>
+      </div>
+      <div class="card">
+        <h2>实时统计（裁决后自动更新）</h2>
+        <div class="pill-stats" id="ov-stats"></div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>管理员补传通道 <span class="muted" style="font-weight:400">替某台设备提交离线期间的数据，走与正常上传完全相同的幂等管线</span></h2>
+      <div class="grid2">
+        <div>
+          <label>目标设备</label>
+          <select id="ru-client"></select>
+          <label>批次 JSON（batch_id / records[]；record_id 必须稳定）</label>
+          <textarea id="ru-json" rows="9" class="mono"></textarea>
+          <label>补传理由（记入审计）</label>
+          <input id="ru-reason" placeholder="例如：设备甲离线恢复后网络仍不稳定，管理员协助补传" />
+          <div class="row" style="margin-top:8px">
+            <button class="primary" id="btn-reupload">提交补传</button>
+            <button id="btn-ru-template">填入示例模板</button>
+          </div>
+        </div>
+        <div>
+          <label>补传处理回执</label>
+          <pre class="json" id="ru-result">（提交后显示逐条处理结果；若与现有归属冲突，会自动进入裁决队列）</pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 任务管控 -->
+  <section class="section" id="sec-tasks">
+    <div class="card" id="task-card-wrap">
+      <h2>任务、归属与重新分配</h2>
+      <div id="task-view"></div>
+    </div>
+  </section>
+
+  <!-- 冲突裁决 -->
+  <section class="section" id="sec-conflicts">
+    <div class="card">
+      <h2>可审阅冲突队列
+        <span class="row">
+          <label class="switch" style="margin:0"><input type="checkbox" id="cf-only-open" checked /> 仅看待裁决</label>
+          <button class="small" id="btn-refresh-conflicts">刷新</button>
+        </span>
+      </h2>
+      <table><thead><tr><th>#</th><th>任务/点位</th><th>原因</th><th>状态</th><th>候选数</th><th>打开时间</th><th>裁决</th><th></th></tr></thead>
+      <tbody id="conflict-list"></tbody></table>
+    </div>
+    <div class="card" id="conflict-detail-card" style="display:none">
+      <h2>冲突详情与裁决 <button class="small" id="btn-close-detail">关闭详情</button></h2>
+      <div id="conflict-detail"></div>
+    </div>
+  </section>
+
+  <!-- 事实记录与统计 -->
+  <section class="section" id="sec-records">
+    <div class="card">
+      <h2>事实记录（任务归属与事实分离：谁采的样永远保留）</h2>
+      <div class="row">
+        <select id="rf-task"><option value="">全部任务</option></select>
+        <select id="rf-status">
+          <option value="">全部状态</option>
+          <option>accepted</option><option>conflict</option><option>rejected</option>
+          <option>quarantined</option><option>manual</option>
+        </select>
+        <input id="rf-point" placeholder="按点位 ID 过滤" style="max-width:220px" />
+        <button id="btn-query-records" class="small">查询</button>
+        <span class="spacer"></span>
+        <button class="small" id="btn-refresh-stats">刷新统计</button>
+      </div>
+      <div class="pill-stats" id="rec-stats" style="margin:10px 0"></div>
+      <table><thead><tr><th>记录 ID</th><th>来源设备</th><th>任务/点位</th><th>状态</th><th>有效</th><th>基准</th><th>采样时间</th><th>数据</th><th>备注</th></tr></thead>
+      <tbody id="records-list"></tbody></table>
+    </div>
+  </section>
+
+  <!-- 审计 -->
+  <section class="section" id="sec-audit">
+    <div class="grid2">
+      <div class="card">
+        <h2>任务服务审计（切断/重分配/领取/关闭）
+          <button class="small" id="btn-audit-task">刷新</button>
+        </h2>
+        <div class="log" style="height:520px" id="audit-task"></div>
+      </div>
+      <div class="card">
+        <h2>入库服务审计（接收/冲突/裁决/补传/重放）
+          <button class="small" id="btn-audit-ingest">刷新</button>
+        </h2>
+        <div class="log" style="height:520px" id="audit-ingest"></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script type="module" src="admin.js"></script>
+</body>
+</html>

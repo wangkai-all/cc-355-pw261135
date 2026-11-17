@@ -1,0 +1,18 @@
+{
+  "name": "offline-sampling-conflict-system",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "离线现场采样、任务重分配与冲突裁决演示系统（全部为虚构数据，无个人真实信息）",
+  "scripts": {
+    "seed": "node scripts/seed.js",
+    "start:task": "node src/task/server.js",
+    "start:ingest": "node src/ingest/server.js",
+    "start:web": "node src/web/server.js",
+    "dev": "node scripts/dev.js",
+    "test": "node --test test/e2e.test.js"
+  },
+  "engines": {
+    "node": ">=22.5.0"
+  }
+}
